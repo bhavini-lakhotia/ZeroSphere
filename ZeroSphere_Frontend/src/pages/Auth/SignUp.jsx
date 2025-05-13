@@ -15,7 +15,30 @@ const SignUp = () => {
 
 
   //handle sign up form submit
-  const handleSignUp = async(e)=>{};
+  const handleSignUp = async(e)=>{
+    e.preventDefault();
+
+    let profileImageUrl="";
+
+    if(!fullName){
+      setError("Please enter your name.");
+      return;
+    }
+
+    if(!validateEmail(email)){
+      setError("please enter a valid email address.");
+      return;
+    }
+
+    if (!password){
+      setError("Please enter the password.")
+      return;
+    }
+
+    setError("");
+
+    //sign up api call
+  };
   return (
   <AuthLayout>
       <div className='lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center'>
@@ -54,6 +77,16 @@ const SignUp = () => {
           />
         </div>
         </div>
+
+          {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
+        
+            <button type='submit' className='btn-primary'>LOGIN</button>
+        
+              <p className=''>Already have an Account?{" "}
+                <Link className="text-primary font-medium underline" to="/login">
+                  SIGN UP
+                </Link>
+              </p>
         </form>
       </div>
     </AuthLayout>
