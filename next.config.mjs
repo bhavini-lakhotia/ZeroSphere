@@ -9,10 +9,7 @@ const nextConfig = {
     ],
   },
 
-  experimental: {
-    appDir: true,
-  },
-
+  experimental: {},
 };
 
 export default nextConfig;
