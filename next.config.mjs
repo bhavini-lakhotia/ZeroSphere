@@ -10,10 +10,9 @@ const nextConfig = {
   },
 
   experimental: {
-    serverActions: {
-      bodySizeLimit: "5mb",
-    },
+    appDir: true,
   },
+
 };
 
 export default nextConfig;

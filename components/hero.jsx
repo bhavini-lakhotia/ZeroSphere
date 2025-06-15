@@ -8,10 +8,8 @@ import Link from "next/link";
 const HeroSection = () => {
   const [typed, setTyped] = useState("");
   const [started, setStarted] = useState(false);
-  const [typingDone, setTypingDone] = useState(false);
   const [typingPhase, setTypingPhase] = useState("typing");
   const fullText = "with Intelligence";
-  const typingIndex = useRef(0);
   const TYPING_DELAY = 65;
   const PAUSE_DELAY = 1200;
   const DELETING_DELAY = 55;
@@ -42,16 +40,19 @@ const HeroSection = () => {
     return () => clearTimeout(timeout);
   }, [typed, typingPhase]);
 
-  const imageRef = useRef(null);
-  const [imageInView, setImageInView] = useState(false);
-  useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      ([entry]) => setImageInView(entry.isIntersecting),
-      { threshold: 0.2 }
-    );
-    if (imageRef.current) observer.observe(imageRef.current);
-    return () => observer.disconnect();
-  }, []);
+ const imageRef = useRef(null);
+const [imageInView, setImageInView] = useState(false);
+
+useEffect(() => {
+  const observer = new window.IntersectionObserver(
+    ([entry]) => setImageInView(entry.isIntersecting),
+    { threshold: 0.2 }
+  );
+
+  if (imageRef.current) observer.observe(imageRef.current);
+  return () => observer.disconnect();
+}, []);
+
 
   return (
     <>
