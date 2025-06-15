@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Base Reset === */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 70% 50.4%;
+  }
+
+  html,
+  body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+  @apply bg-gradient-to-br from-[#d1c4e9] via-[#ede7f6] to-[#7986cb] dark:from-[#4C1D95] dark:to-[#c5cae9] dark:via-[#e1bee7];
+  background-attachment: fixed;
+  background-size: cover;
+  @apply bg-background text-foreground;
+}
+
+  * {
+    @apply border-border;
+  }
+}
+
+/* === Components === */
+@layer components {
+  .typewriter {
+    font-family: "Courier New", Courier, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 0.15em solid currentColor;
+    animation: typewriter 2.5s steps(20, end), blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes typewriter {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes blink-caret {
+    from,
+    to {
+      border-color: transparent;
+    }
+    50% {
+      border-color: currentColor;
+    }
+  }
+
+  .logo-gradient-light {
+    background: linear-gradient(to right, #9d4edd, #7b2cbf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo-gradient-dark {
+    background: linear-gradient(to right, #e0aaff, #c77dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* === Utilities === */
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  .animate-fadeinup {
+    animation: fadeInUp 1s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+  }
+
+  @keyframes gradientMove {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+/* Smooth transition for theme changes */
+.theme-transition {
+  transition: background-color 0.4s ease, color 0.4s ease, filter 0.4s ease;
+}
