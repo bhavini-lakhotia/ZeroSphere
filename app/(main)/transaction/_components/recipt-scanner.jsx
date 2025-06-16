@@ -11,8 +11,9 @@ export function ReceiptScanner({ onScanComplete }) {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [cameraRequested, setCameraRequested] = useState(false); // <-- Track request state
+
+  const [cameraRequested, setCameraRequested] = useState(false);
+  const [cameraStarted, setCameraStarted] = useState(false);
 
   const {
     loading: scanReceiptLoading,
@@ -21,8 +22,9 @@ export function ReceiptScanner({ onScanComplete }) {
   } = useFetch(scanReceipt);
 
   const handleReceiptScan = async (file) => {
+    if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size should be less than 5MB");
+      toast.error("File must be < 5MB");
       return;
     }
     await scanReceiptFn(file);
@@ -30,48 +32,45 @@ export function ReceiptScanner({ onScanComplete }) {
 
   useEffect(() => {
     if (scannedData && !scanReceiptLoading) {
-      onScanComplete(scannedData);
-      toast.success("Receipt scanned successfully");
+      toast.success("Receipt scanned");
+      onScanComplete?.(scannedData);
     }
-  }, [scanReceiptLoading, scannedData]);
+  }, [scannedData, scanReceiptLoading]);
 
-  // 🚀 Start camera AFTER video is rendered
   useEffect(() => {
     const startCamera = async () => {
-      if (!videoRef.current) {
-        console.warn("Video element not ready");
-        return;
-      }
+      if (cameraStarted || !cameraRequested || !videoRef.current) return;
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
           audio: false,
         });
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
-        };
-        setCameraActive(true);
+
+        const video = videoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          video.onloadedmetadata = () => video.play();
+          setCameraStarted(true);
+        }
       } catch (err) {
-        toast.error("Camera access failed: " + err.message);
+        toast.error("Camera access error: " + err.message);
+        setCameraRequested(false);
+        setCameraStarted(false);
       }
     };
 
-    if (cameraRequested && !cameraActive) {
-      startCamera();
-    }
-  }, [cameraRequested, cameraActive]);
+    startCamera();
+  }, [cameraRequested, cameraStarted]);
 
   const stopCamera = () => {
     const video = videoRef.current;
     if (video && video.srcObject) {
-      const stream = video.srcObject;
-      stream.getTracks().forEach((track) => track.stop());
+      video.srcObject.getTracks().forEach((track) => track.stop());
       video.srcObject = null;
     }
-    setCameraActive(false);
     setCameraRequested(false);
+    setCameraStarted(false);
   };
 
   const captureImage = () => {
@@ -79,10 +78,10 @@ export function ReceiptScanner({ onScanComplete }) {
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    const context = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     canvas.toBlob((blob) => {
       if (blob) {
@@ -94,7 +93,8 @@ export function ReceiptScanner({ onScanComplete }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 w-full">
+      {/* Upload / Camera Buttons */}
       <div className="flex gap-2 w-full">
         <Button
           type="button"
@@ -120,16 +120,12 @@ export function ReceiptScanner({ onScanComplete }) {
           type="button"
           variant="secondary"
           className="flex-1 h-10"
-          onClick={() => {
-            if (cameraActive) {
-              stopCamera();
-            } else {
-              setCameraRequested(true); // ⬅️ Trigger video rendering, then start camera
-            }
-          }}
+          onClick={() =>
+            cameraStarted ? stopCamera() : setCameraRequested(true)
+          }
           disabled={scanReceiptLoading}
         >
-          {cameraActive ? (
+          {cameraStarted ? (
             <>
               <Video className="mr-2" />
               Stop Camera
@@ -143,6 +139,7 @@ export function ReceiptScanner({ onScanComplete }) {
         </Button>
       </div>
 
+      {/* Camera preview */}
       {cameraRequested && (
         <div className="relative w-full max-w-md mt-4">
           <video
@@ -162,6 +159,7 @@ export function ReceiptScanner({ onScanComplete }) {
         </div>
       )}
 
+      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}

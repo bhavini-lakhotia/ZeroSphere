@@ -208,22 +208,25 @@ export async function getUserTransactions(query = {}) {
 }
 
 // ✅ Scan Receipt with Gemini API
+// ✅ Scan Receipt with Gemini API
 export async function scanReceipt(file) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     const arrayBuffer = await file.arrayBuffer();
     const base64String = Buffer.from(arrayBuffer).toString("base64");
 
     const prompt = `
-      Analyze this receipt image and extract the following information in JSON format:
+      You are an expert at analyzing receipts. Please extract the following information from this receipt image and return it in JSON format:
       {
-        "amount": number,
-        "date": "ISO date string",
-        "description": "string",
-        "merchantName": "string",
-        "category": "string"
+        "amount": number,           // Total amount paid (e.g., 129.99)
+        "date": "YYYY-MM-DD",       // Date the receipt was issued
+        "description": "string",    // Description of the main purchase or service
+        "merchantName": "string",   // Name of the store or merchant
+        "category": "string"        // Category such as Food, Travel, Shopping, etc.
       }
-      If it's not a receipt, return an empty object.
+
+      If it's not a receipt or no valid data is found, return: {}
     `;
 
     const result = await model.generateContent([
@@ -236,20 +239,44 @@ export async function scanReceipt(file) {
       prompt,
     ]);
 
-    const text = result.response.text().replace(/```(?:json)?\n?/g, "").trim();
-    const data = JSON.parse(text);
+    // Clean and parse the output
+    let text = result.response.text().trim();
+
+    // Remove code block wrappers like ```json or ```
+    text = text.replace(/```(?:json)?/g, "").replace(/```/g, "").trim();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      throw new Error("Unable to parse the scanned receipt data.");
+    }
+
+    // Validate and sanitize parsed data
+    if (!data || Object.keys(data).length === 0) {
+      throw new Error("No valid receipt data found in the image.");
+    }
+
+    const parsedAmount = parseFloat(data.amount);
+    const parsedDate = data.date ? new Date(data.date) : null;
+
+    if (!parsedAmount || isNaN(parsedAmount) || !parsedDate || isNaN(parsedDate.getTime())) {
+      throw new Error("Incomplete or invalid receipt details.");
+    }
 
     return {
-      amount: parseFloat(data.amount),
-      date: new Date(data.date),
-      description: data.description,
-      category: data.category,
-      merchantName: data.merchantName,
+      amount: parsedAmount,
+      date: parsedDate,
+      description: data.description ?? "No description",
+      category: data.category ?? "Uncategorized",
+      merchantName: data.merchantName ?? "Unknown Merchant",
     };
   } catch (error) {
-    throw new Error("Failed to scan receipt");
+    console.error("Scan error:", error);
+    throw new Error(error.message || "Failed to scan receipt");
   }
 }
+
 //split wala part
 export async function markSplitAsPaid({ splitId }) {
   const { userId } = await auth();

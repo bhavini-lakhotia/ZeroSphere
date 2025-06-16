@@ -137,7 +137,7 @@ export async function getDashboardData() {
   try {
     const transactions = await db.transaction.findMany({
       where: { userId: user.id },
-      orderBy: { date: "desc" },
+      orderBy: { createdAt: "desc" },
       include: {
         splits: true, // includes paid/unpaid split tracking
       },
